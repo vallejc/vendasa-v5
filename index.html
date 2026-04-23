@@ -1,0 +1,690 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>VENDASA V5 — Por hacer</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#F8F8F7;color:#222;font-size:14px}
+header{background:#C62828;padding:14px 20px;display:flex;align-items:center;gap:12px;position:sticky;top:0;z-index:100}
+header h1{color:#fff;font-size:16px;font-weight:600;flex:1}
+.status{font-size:11px;color:rgba(255,255,255,0.75);background:rgba(0,0,0,0.15);padding:3px 8px;border-radius:20px}
+.btn{font-size:12px;padding:6px 14px;border-radius:8px;border:1px solid rgba(255,255,255,0.4);background:rgba(255,255,255,0.15);color:#fff;cursor:pointer}
+.btn:hover{background:rgba(255,255,255,0.25)}
+.main{max-width:960px;margin:0 auto;padding:16px}
+.metrics{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:8px}
+.metrics2{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-bottom:16px}
+.metric{background:#fff;border:0.5px solid #E0E0E0;border-radius:8px;padding:10px 12px;cursor:pointer;transition:border-color 0.15s}
+.metric:hover{border-color:#C62828}
+.metric.active{border-color:#C62828;background:#FFF5F5}
+.metric-label{font-size:10px;color:#888;margin-bottom:3px}
+.metric-value{font-size:20px;font-weight:600}
+
+.view-bar{display:flex;gap:8px;margin-bottom:14px;align-items:center;flex-wrap:wrap}
+.view-btn{font-size:11px;padding:5px 14px;border-radius:20px;border:1px solid #E0E0E0;background:#fff;cursor:pointer;color:#666;font-weight:500}
+.view-btn.active{background:#C62828;color:#fff;border-color:#C62828}
+.search-wrap{flex:1;min-width:180px;max-width:320px;position:relative}
+.search-wrap input{width:100%;padding:5px 10px 5px 28px;border:1px solid #E0E0E0;border-radius:20px;font-size:12px;color:#222;background:#fff;font-family:inherit}
+.search-wrap input:focus{outline:none;border-color:#C62828}
+.search-icon{position:absolute;left:9px;top:50%;transform:translateY(-50%);font-size:11px;color:#aaa;pointer-events:none}
+
+.filters{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px}
+.fbtn{font-size:11px;padding:4px 10px;border-radius:20px;border:1px solid #E0E0E0;background:#fff;cursor:pointer;color:#666}
+.fbtn.active{background:#C62828;color:#fff;border-color:#C62828;font-weight:500}
+
+.cat-section{margin-bottom:14px}
+.cat-hdr{display:flex;align-items:center;gap:8px;padding:8px 10px;border-radius:8px;cursor:pointer;user-select:none}
+.cat-hdr:hover{background:#F0F0F0}
+.cat-label{font-size:13px;font-weight:600}
+.cat-badge{font-size:10px;padding:2px 7px;border-radius:20px;margin-left:auto}
+.cat-body{padding:3px 0 3px 10px}
+
+.client-card{background:#fff;border:0.5px solid #E0E0E0;border-radius:8px;margin-bottom:5px;overflow:hidden}
+.client-hdr{display:flex;align-items:center;gap:8px;padding:9px 12px;cursor:pointer}
+.client-hdr:hover{background:#FAFAFA}
+.client-name{font-size:13px;font-weight:500;flex:1;line-height:1.3}
+.client-company{font-size:10px;color:#888;font-weight:400;display:block;margin-top:1px}
+.chev{font-size:9px;color:#999;transition:transform 0.15s;flex-shrink:0}
+.chev.open{transform:rotate(90deg)}
+.tasks{border-top:0.5px solid #F0F0F0;padding:6px 12px;display:none}
+.tasks.open{display:block}
+.task{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:0.5px solid #F5F5F5}
+.task:last-child{border-bottom:none}
+.dot{width:7px;height:7px;border-radius:50%;flex-shrink:0;margin-top:4px}
+.task-text{font-size:12px;flex:1;line-height:1.4}
+.task-note{font-size:11px;color:#888;margin-top:1px}
+.tag{font-size:10px;padding:1px 6px;border-radius:20px;flex-shrink:0}
+.p0{background:#E24B4A}.p1{background:#EF9F27}.p2{background:#378ADD}.p3{background:#9E9E9E}.pn{background:#E0E0E0}
+.empty{font-size:12px;color:#aaa;padding:8px 0;font-style:italic}
+.action-btn{font-size:10px;padding:2px 7px;border-radius:6px;border:0.5px solid #E0E0E0;background:#fff;cursor:pointer;color:#666}
+.action-btn:hover{background:#F5F5F5}
+.action-btn.danger:hover{background:#FFEBEE;color:#C62828;border-color:#FFCDD2}
+
+/* Company view */
+.company-section{background:#fff;border:0.5px solid #E0E0E0;border-radius:10px;margin-bottom:8px;overflow:hidden}
+.company-hdr{display:flex;align-items:center;gap:10px;padding:11px 14px;cursor:pointer;background:#FAFAFA}
+.company-hdr:hover{background:#F5F5F5}
+.company-name{font-size:14px;font-weight:600;flex:1}
+.company-pills{display:flex;gap:4px;flex-wrap:wrap}
+.cat-pill{font-size:10px;padding:2px 8px;border-radius:20px;font-weight:500}
+.company-body{padding:4px 8px 8px}
+.proj-row{display:flex;align-items:center;gap:8px;padding:7px 8px;border-radius:6px;cursor:pointer;border-bottom:0.5px solid #F5F5F5}
+.proj-row:last-child{border-bottom:none}
+.proj-row:hover{background:#FAFAFA}
+.proj-name{font-size:12px;font-weight:500;flex:1}
+.proj-tasks-wrap{padding:2px 8px 8px 30px;display:none}
+.proj-tasks-wrap.open{display:block}
+
+.no-results{text-align:center;padding:36px;color:#aaa;font-size:13px;font-style:italic}
+
+.modal-overlay{display:none;position:fixed;top:0;left:0;right:0;bottom:0;background:rgba(0,0,0,0.4);z-index:200;align-items:center;justify-content:center;padding:20px}
+.modal-overlay.open{display:flex}
+.modal{background:#fff;border-radius:12px;padding:20px;width:100%;max-width:480px;max-height:90vh;overflow-y:auto}
+.modal h3{font-size:15px;font-weight:600;margin-bottom:16px;color:#222}
+.form-row{margin-bottom:12px;position:relative}
+.form-label{font-size:11px;color:#666;margin-bottom:4px;display:block;font-weight:500}
+.form-row input,.form-row select,.form-row textarea{width:100%;padding:8px 10px;border:1px solid #E0E0E0;border-radius:6px;font-size:13px;font-family:inherit;color:#222;background:#fff}
+.form-row input:focus,.form-row select:focus,.form-row textarea:focus{outline:none;border-color:#C62828}
+.form-row textarea{min-height:70px;resize:vertical}
+.btn-row{display:flex;gap:8px;margin-top:16px;justify-content:flex-end}
+.btn-primary{padding:8px 18px;background:#C62828;color:#fff;border:none;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-primary:hover{background:#B71C1C}
+.btn-secondary{padding:8px 18px;background:#fff;color:#666;border:1px solid #E0E0E0;border-radius:6px;font-size:13px;cursor:pointer;font-family:inherit}
+.btn-secondary:hover{background:#F5F5F5}
+.loading{text-align:center;padding:40px;color:#888;font-size:13px}
+.toast{position:fixed;bottom:20px;right:20px;background:#333;color:#fff;padding:10px 16px;border-radius:8px;font-size:12px;z-index:300;opacity:0;transition:opacity 0.3s;pointer-events:none}
+.toast.show{opacity:1}
+.sync-btn{font-size:11px;padding:4px 10px;border-radius:6px;border:1px solid rgba(255,255,255,0.3);background:rgba(255,255,255,0.1);color:#fff;cursor:pointer;margin-left:4px}
+.sync-btn:hover{background:rgba(255,255,255,0.2)}
+
+.ac-list{position:absolute;top:100%;left:0;right:0;background:#fff;border:1px solid #E0E0E0;border-radius:6px;z-index:50;max-height:160px;overflow-y:auto;box-shadow:0 4px 12px rgba(0,0,0,0.1);margin-top:2px}
+.ac-item{padding:7px 10px;font-size:12px;cursor:pointer;color:#222}
+.ac-item:hover{background:#F5F5F5}
+
+@media(max-width:600px){
+  .metrics{grid-template-columns:repeat(2,1fr)}
+  .metrics2{grid-template-columns:repeat(2,1fr)}
+  header h1{font-size:14px}
+}
+</style>
+</head>
+<body>
+
+<header>
+  <h1>VENDASA V5 — Por hacer</h1>
+  <span class="status" id="statusBar">cargando...</span>
+  <button class="sync-btn" onclick="syncToSheets()">&#8635; Sync</button>
+  <button class="btn" onclick="openAddClient()">+ proyecto</button>
+  <button class="btn" onclick="openAddTask()">+ tarea</button>
+</header>
+
+<div class="main">
+  <div id="appContent"><div class="loading">Cargando datos...</div></div>
+</div>
+
+<!-- Modal Proyecto -->
+<div class="modal-overlay" id="clientModal">
+  <div class="modal">
+    <h3 id="clientModalTitle">Agregar proyecto</h3>
+    <div class="form-row">
+      <label class="form-label">Razón Social / Cliente</label>
+      <input id="fCompany" placeholder="ej. Grupo Constructor PEASA" autocomplete="off"/>
+      <div class="ac-list" id="acList" style="display:none"></div>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Nombre Clave (obra / proyecto)</label>
+      <input id="fName" placeholder="ej. BMW TKB"/>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Categoría</label>
+      <select id="fCat"></select>
+    </div>
+    <div class="form-row">
+      <label class="form-label">Notas (opcional)</label>
+      <textarea id="fNotes" placeholder="Contacto, contexto, etc."></textarea>
+    </div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="closeClientModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveClient()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Tarea -->
+<div class="modal-overlay" id="taskModal">
+  <div class="modal">
+    <h3>Agregar tarea</h3>
+    <div class="form-row"><label class="form-label">Proyecto</label><select id="ftClient"></select></div>
+    <div class="form-row"><label class="form-label">Tarea / pendiente</label><input id="ftTask" placeholder="ej. Entregar presupuesto"/></div>
+    <div class="form-row"><label class="form-label">Prioridad</label>
+      <select id="ftPrio">
+        <option value="0 Crítico">Crítico</option>
+        <option value="1 Alta">Alta</option>
+        <option value="2 Media" selected>Media</option>
+        <option value="3 Baja">Baja</option>
+        <option value="">Sin prioridad</option>
+      </select>
+    </div>
+    <div class="form-row"><label class="form-label">Notas (opcional)</label><input id="ftNote"/></div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="closeTaskModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveTask()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Editar Tarea -->
+<div class="modal-overlay" id="editTaskModal">
+  <div class="modal">
+    <h3>Editar tarea</h3>
+    <div class="form-row"><label class="form-label">Tarea / pendiente</label><input id="etTask" placeholder="ej. Entregar presupuesto"/></div>
+    <div class="form-row"><label class="form-label">Prioridad</label>
+      <select id="etPrio">
+        <option value="0 Crítico">Crítico</option>
+        <option value="1 Alta">Alta</option>
+        <option value="2 Media">Media</option>
+        <option value="3 Baja">Baja</option>
+        <option value="">Sin prioridad</option>
+      </select>
+    </div>
+    <div class="form-row"><label class="form-label">Notas (opcional)</label><input id="etNote"/></div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="closeEditTaskModal()">Cancelar</button>
+      <button class="btn-primary" onclick="saveEditTask()">Guardar</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal Mover -->
+<div class="modal-overlay" id="moveModal">
+  <div class="modal">
+    <h3>Mover proyecto a categoría</h3>
+    <div class="form-row"><label class="form-label">Nueva categoría</label><select id="fMoveCat"></select></div>
+    <div class="btn-row">
+      <button class="btn-secondary" onclick="closeMoveModal()">Cancelar</button>
+      <button class="btn-primary" onclick="confirmMove()">Mover</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const SHEET_ID='1YDIJ9BQtLgqRKbmNQTidJjxWGQ6rDoY4-V6F-Qjl22Q';
+const API_KEY='AIzaSyCL43q6_i7wBccwQtSLePqQuztMx8wY1OE';
+const SHEET_NAME='datos';
+const LS_KEY='vendasa-v5-local';
+
+const CAT_META={
+  activo:      {label:'Activos',          color:'#3B6D11',bg:'#EAF3DE'},
+  congelador:  {label:'Congelador',        color:'#185FA5',bg:'#E3F2FD'},
+  cobranza:    {label:'Cobranza vencida',  color:'#993C1D',bg:'#FFEBEE'},
+  terminado:   {label:'Terminados',        color:'#5F5E5A',bg:'#ECEFF1'},
+  prospecto:   {label:'Prospectos',        color:'#3C3489',bg:'#EEEDFE'},
+  proyecto:    {label:'Proyectos',         color:'#0F6E56',bg:'#E1F5EE'},
+  presupuesto: {label:'Presupuestos',      color:'#854F0B',bg:'#FFF3E0'},
+  alianza:     {label:'Alianzas',          color:'#6A1B9A',bg:'#F3E5F5'},
+};
+
+const DEFAULT_DATA={
+  clients:[
+    {id:'c1',  company:'Cecilia Bremer',                     name:'Casas Valladares',                      cat:'activo',    notes:''},
+    {id:'c2',  company:'Compañía Hotelera Barniedo',          name:'Holiday Inn Quijote — Etapa 3',         cat:'activo',    notes:'Retrasos por cliente'},
+    {id:'c3',  company:'Ingeniería y Construcciones Rio Bravo',name:'Hyatt Place Piedras Negras',           cat:'activo',    notes:'Obra activa, retraso oficial por cliente'},
+    {id:'c4',  company:'Gacoba',                              name:'Hyatt Centric Querétaro',               cat:'activo',    notes:'Retrasos por cliente'},
+    {id:'c4b', company:'Gacoba',                              name:'PH',                                    cat:'activo',    notes:''},
+    {id:'c5',  company:'Turística Marvago',                   name:'HGI Uruapan',                           cat:'activo',    notes:''},
+    {id:'c6',  company:'OPSA Constructora',                   name:'Torre Elite (Sierra Hermosa)',           cat:'activo',    notes:''},
+    {id:'c7',  company:'Paquetexpress',                       name:'Mantenimiento Sucursales Jalisco',       cat:'activo',    notes:''},
+    {id:'c7b', company:'Paquetexpress',                       name:'Mantenimiento MacroCEDIS Tlajomulco',    cat:'activo',    notes:''},
+    {id:'c8',  company:'Grupo Azteca',                        name:'Fairfield SLP',                         cat:'activo',    notes:''},
+    {id:'c9',  company:'Ricardo Trujillo',                    name:'Marriott AC SLP',                       cat:'activo',    notes:''},
+    {id:'c10', company:'Grupo San Carlos',                    name:'Ventana Sur',                           cat:'activo',    notes:'Christian González 332 606 4961'},
+    {id:'c11', company:'IMAA',                                name:'Serpentines Texas Instruments',         cat:'activo',    notes:''},
+    {id:'c12', company:'Baxal',                               name:'MAVER Desarrollo',                      cat:'activo',    notes:''},
+    {id:'c13', company:'CAO Constructora',                    name:'Changan León',                          cat:'congelador',notes:'Bloqueado por cliente. Revisar Apr-2027'},
+    {id:'c13b',company:'CAO Constructora',                    name:'Changan Irapuato',                      cat:'congelador',notes:'Bloqueado por cliente. Revisar Apr-2027'},
+    {id:'c13c',company:'CAO Constructora',                    name:'Changan Celaya',                        cat:'congelador',notes:'Bloqueado por cliente. Revisar Apr-2027'},
+    {id:'c14', company:'Forma Territorio',                    name:'Privada Paris',                         cat:'cobranza',  notes:'Finiquito ~86K. A punto de cerrar'},
+    {id:'c15', company:'Grupo Constructor PEASA',             name:'BMW TKB',                               cat:'terminado', notes:''},
+    {id:'c16', company:'Guía Conexión Inmobiliaria',          name:'INEGI Parque Héroes',                   cat:'terminado', notes:''},
+    {id:'c17', company:'Hoteles AM',                          name:'Restaurant Victoria Ejecutivo',         cat:'terminado', notes:'Finiquito cerrado con Claudia Jiménez'},
+    {id:'c18', company:'CAO Constructora',                    name:'Casa APEAM',                            cat:'terminado', notes:''},
+    {id:'c19', company:'DICDI Proyectos Integrales',          name:'Mabe Oficinas',                         cat:'terminado', notes:''},
+    {id:'c20', company:'Wyndham Garden AGS',                  name:'Mantenimiento Preventivo y Correctivo', cat:'prospecto', notes:'Contacto: Montserrat Díaz'},
+    {id:'c20b',company:'Wyndham Garden AGS',                  name:'Torre Nueva',                           cat:'prospecto', notes:''},
+    {id:'c21', company:'Danhos',                              name:'Especificar Loren Cook',                cat:'prospecto', notes:'Contacto: Sergio González'},
+    {id:'c22', company:'Edgar Guerra',                        name:'Edgar Guerra',                          cat:'prospecto', notes:''},
+    {id:'c23', company:'Meshbonding',                         name:'Colaboración Comercial',                cat:'alianza',   notes:''},
+    {id:'c24', company:'PICSA Bombas y Sistemas',             name:'PICSA Bombas y Sistemas',               cat:'alianza',   notes:''},
+    {id:'c25', company:'Victaulic',                           name:'Victaulic',                             cat:'alianza',   notes:''},
+    {id:'c26', company:'Arturo Maqueo',                       name:'Arturo Maqueo',                         cat:'alianza',   notes:''},
+    {id:'c27', company:'Trane Data Centers',                  name:'Trane Data Centers',                    cat:'alianza',   notes:''},
+  ],
+  tasks:[
+    {id:'t1', cid:'c1', text:'M1 — Ductería, tubería, planos lineales',prio:'3 Baja',note:''},
+    {id:'t2', cid:'c1', text:'M2 — Arrancar extractores, termostatos, rejillas',prio:'1 Alta',note:''},
+    {id:'t3', cid:'c1', text:'M3 — Adicionales Jesús, carta Omar y Enrique Saldívar',prio:'1 Alta',note:''},
+    {id:'t4', cid:'c1', text:'M4 — Falta entregar carpeta',prio:'1 Alta',note:''},
+    {id:'t5', cid:'c1', text:'M5 EMME — Ductería sótano, automatización Symbio, saldos con Oly',prio:'2 Media',note:''},
+    {id:'t6', cid:'c2', text:'Módulo 7 — Pendientes y arranque',prio:'',note:''},
+    {id:'t7', cid:'c2', text:'Módulo 8 — Pendientes y arranque',prio:'',note:''},
+    {id:'t8', cid:'c2', text:'Módulo 9 — Pendientes y arranque',prio:'',note:''},
+    {id:'t9', cid:'c3', text:'Ductería de verticales y PB',prio:'1 Alta',note:'Surtir lámina cal. 26 y 24 al ductero'},
+    {id:'t10',cid:'c4', text:'Listado de pendientes a Daniel Rojas',prio:'0 Crítico',note:''},
+    {id:'t11',cid:'c4', text:'Rejillas NAMM habitaciones',prio:'0 Crítico',note:'Fecha tentativa dic. Falta confirmación'},
+    {id:'t12',cid:'c4', text:'OC Adicionales Cocinas, Dry, Carmensitas, baños',prio:'',note:''},
+    {id:'t13',cid:'c4', text:'Orden de trabajo EDC Ductero y Técnico',prio:'',note:''},
+    {id:'t14',cid:'c5', text:'Cableado de equipos',prio:'',note:''},
+    {id:'t15',cid:'c5', text:'PB y Restaurante — terminación pendiente',prio:'',note:''},
+    {id:'t16',cid:'c6', text:'Selección de equipos Trane / Gree',prio:'0 Crítico',note:''},
+    {id:'t17',cid:'c6', text:'Opciones de evaporadoras Highwall',prio:'0 Crítico',note:''},
+    {id:'t18',cid:'c6', text:'Detalles OPSA Torres RP — dept. 505',prio:'0 Crítico',note:''},
+    {id:'t19',cid:'c6', text:'Presentar proyecto Torre Elite',prio:'2 Media',note:'Planos y presupuesto Trane/Gree'},
+    {id:'t20',cid:'c7', text:'Cobranza de Lagos de Moreno',prio:'',note:''},
+    {id:'t21',cid:'c7', text:'Contacto Carlos Covarrubias — CEDIS Mazatlán y GDL01',prio:'',note:''},
+    {id:'t22',cid:'c7', text:'Respuesta Omar Valenzuela — cabina de pintura',prio:'2 Media',note:''},
+    {id:'t23',cid:'c8', text:'Cobro pantalla Fairfield con Héctor de Ávila',prio:'',note:'Póliza de mantenimiento inminente'},
+    {id:'t24',cid:'c8', text:'Edificio B — presupuesto con visita Trane',prio:'',note:''},
+    {id:'t25',cid:'c9', text:'Cobrar Proyecto Ejecutivo Marriott AC',prio:'1 Alta',note:''},
+    {id:'t26',cid:'c4b',text:'Cierre de obra y finiquito PH',prio:'0 Crítico',note:'EDC corregido de Pedro'},
+    {id:'t27',cid:'c10',text:'Presupuesto en proceso — torre nueva',prio:'',note:''},
+    {id:'t28',cid:'c11',text:'Detalles OPSA Torres RP / Serpentines',prio:'0 Crítico',note:''},
+    {id:'t29',cid:'c11',text:'Mantenimientos COMPAS — ejecutadas 4, pagadas 3',prio:'2 Media',note:''},
+    {id:'t30',cid:'c12',text:'MAVER Desarrollo — Ejecución de obra en curso',prio:'1 Alta',note:''},
+    {id:'t31',cid:'c12',text:'MAVER Comedor — Presupuesto entregado, pendiente autorizar',prio:'2 Media',note:''},
+    {id:'t32',cid:'c13',text:'Celaya — Arranque y entrega. Falta CFE',prio:'1 Alta',note:''},
+    {id:'t33',cid:'c13b',text:'Irapuato — Arranque y entrega. Falta CFE',prio:'1 Alta',note:''},
+    {id:'t34',cid:'c13c',text:'León — Minichiller no funciona',prio:'0 Crítico',note:'Hablar con Enrique Gómez Mier'},
+    {id:'t35',cid:'c14',text:'Finiquito ~86K netos — a punto de cerrar',prio:'0 Crítico',note:''},
+  ]
+};
+
+let state={clients:[],tasks:[],activeFilter:'all',activeView:'cat',searchQuery:''};
+let movingClientId=null;
+
+function uid(){return 'x'+Math.random().toString(36).slice(2,9);}
+
+function setStatus(msg,ok=true){
+  const el=document.getElementById('statusBar');
+  if(el){el.textContent=msg;el.style.background=ok?'rgba(0,0,0,0.15)':'rgba(180,0,0,0.3)';}
+}
+
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2500);
+}
+
+function saveLocal(){
+  localStorage.setItem(LS_KEY,JSON.stringify({clients:state.clients,tasks:state.tasks}));
+}
+
+function loadLocal(){
+  try{
+    const d=localStorage.getItem(LS_KEY);
+    if(d){const p=JSON.parse(d);state.clients=p.clients||[];state.tasks=p.tasks||[];return true;}
+  }catch(e){}
+  return false;
+}
+
+function migrateData(){
+  state.clients.forEach(c=>{if(!c.company)c.company=c.name;});
+}
+
+const APPS_SCRIPT_URL='https://script.google.com/macros/s/AKfycbwmrP50bn_lGaq7yAU7pCNKoCvX1bTPF79fkj7VpJn8wnN3m4bIcbZF_j74gfV_AUcP/exec';
+
+async function syncToSheets(){
+  setStatus('sincronizando...');
+  try{
+    const rows=[['ID','Tipo','ClienteID','Nombre Clave','Categoría','Prioridad','Notas','Razón Social']];
+    state.clients.forEach(c=>rows.push([c.id,'cliente','',c.name,c.cat,'',c.notes||'',c.company||'']));
+    state.tasks.forEach(t=>rows.push([t.id,'tarea',t.cid,t.text,'',t.prio,t.note||'','']));
+    const res=await fetch(APPS_SCRIPT_URL,{method:'POST',
+      headers:{'Content-Type':'text/plain'},
+      body:JSON.stringify({rows})});
+    const data=await res.json();
+    if(data.ok){
+      setStatus('sincronizado '+new Date().toLocaleTimeString('es-MX',{hour:'2-digit',minute:'2-digit'}));
+      showToast('Sincronizado con Google Sheets');
+    }else throw new Error(data.error||'Error desconocido');
+  }catch(e){setStatus('error sync: '+e.message,false);showToast('Error al sincronizar: '+e.message);}
+}
+
+async function loadFromSheets(){
+  try{
+    const res=await fetch(APPS_SCRIPT_URL);
+    if(!res.ok) throw new Error('no sheet');
+    const json=await res.json();
+    if(!json.ok||!json.data) return false;
+    const clients=[],tasks=[];
+    json.data.forEach(r=>{
+      if(!r['ID']) return;
+      if(r['Tipo']==='cliente') clients.push({id:r['ID'],name:r['Nombre Clave'],cat:r['Categoría'],notes:r['Notas']||'',company:r['Razón Social']||r['Nombre Clave']});
+      if(r['Tipo']==='tarea')   tasks.push({id:r['ID'],cid:r['ClienteID'],text:r['Nombre Clave'],prio:r['Prioridad']||'',note:r['Notas']||''});
+    });
+    if(clients.length>0){state.clients=clients;state.tasks=tasks;return true;}
+  }catch(e){console.log('sheets error:',e);}
+  return false;
+}
+
+async function init(){
+  setStatus('cargando...');
+  const hasLocal=loadLocal();
+  if(hasLocal&&state.clients.length>0){
+    migrateData();setStatus('cargado local');render();
+  }else{
+    state.clients=DEFAULT_DATA.clients;state.tasks=DEFAULT_DATA.tasks;
+    saveLocal();setStatus('datos iniciales');render();
+  }
+}
+
+function pDot(p){
+  const cls=p==='0 Crítico'?'p0':p==='1 Alta'?'p1':p==='2 Media'?'p2':p==='3 Baja'?'p3':'pn';
+  return `<div class="dot ${cls}"></div>`;
+}
+function escHtml(s){return (s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');}
+
+// ────────────────────────────────────────────────
+// RENDER
+// ────────────────────────────────────────────────
+function render(){
+  const app=document.getElementById('appContent');
+  const cats=Object.keys(CAT_META);
+  const counts={};cats.forEach(c=>counts[c]=state.clients.filter(cl=>cl.cat===c).length);
+
+  const first4=['activo','congelador','cobranza','terminado'];
+  const last4=['prospecto','proyecto','presupuesto','alianza'];
+
+  const m1=`<div class="metrics">${first4.map(c=>`
+    <div class="metric${state.activeFilter===c&&state.activeView==='cat'?' active':''}" onclick="setFilter('${c}')">
+      <div class="metric-label">${CAT_META[c].label}</div>
+      <div class="metric-value" style="color:${CAT_META[c].color}">${counts[c]}</div>
+    </div>`).join('')}</div>`;
+
+  const m2=`<div class="metrics2">${last4.map(c=>`
+    <div class="metric${state.activeFilter===c&&state.activeView==='cat'?' active':''}" onclick="setFilter('${c}')">
+      <div class="metric-label">${CAT_META[c].label}</div>
+      <div class="metric-value" style="color:${CAT_META[c].color}">${counts[c]}</div>
+    </div>`).join('')}</div>`;
+
+  const viewBar=`<div class="view-bar">
+    <button class="view-btn${state.activeView==='cat'?' active':''}" onclick="setView('cat')">📂 Por categoría</button>
+    <button class="view-btn${state.activeView==='company'?' active':''}" onclick="setView('company')">🏢 Por cliente</button>
+    <div class="search-wrap">
+      <span class="search-icon">🔍</span>
+      <input type="text" placeholder="Buscar cliente o proyecto…" value="${escHtml(state.searchQuery)}" oninput="setSearch(this.value)"/>
+    </div>
+  </div>`;
+
+  let body='';
+
+  if(state.activeView==='cat'){
+    // ── VISTA POR CATEGORÍA ──
+    const filters=`<div class="filters">
+      ${[['all','Todos'],...cats.map(k=>[k,CAT_META[k].label])].map(([k,l])=>
+        `<button class="fbtn${state.activeFilter===k?' active':''}" onclick="setFilter('${k}')">${l}</button>`
+      ).join('')}
+    </div>`;
+    const q=state.searchQuery.toLowerCase();
+    const activeCats=state.activeFilter==='all'?cats:[state.activeFilter];
+    body=filters+activeCats.map(cat=>{
+      let clients=state.clients.filter(c=>c.cat===cat);
+      if(q) clients=clients.filter(c=>c.name.toLowerCase().includes(q)||(c.company||'').toLowerCase().includes(q));
+      const rows=clients.length===0?`<div class="empty" style="padding:8px 10px">Sin entradas.</div>`:clients.map(c=>{
+        const ct=state.tasks.filter(t=>t.cid===c.id);
+        const cr=ct.filter(t=>t.prio==='0 Crítico').length;
+        const hi=ct.filter(t=>t.prio==='1 Alta').length;
+        const bdg=[cr?`<span class="tag" style="background:#FFCDD2;color:#C62828">${cr} crít.</span>`:'',
+                   hi?`<span class="tag" style="background:#FFE0B2;color:#E65100">${hi} alta</span>`:''].filter(Boolean).join('');
+        const thtml=ct.length===0?`<div class="empty">Sin tareas — usa "+ tarea".</div>`:ct.map(t=>`
+          <div class="task">${pDot(t.prio)}<div style="flex:1">
+            <div class="task-text">${escHtml(t.text)}</div>
+            ${t.note?`<div class="task-note">${escHtml(t.note)}</div>`:''}
+          </div><button class="action-btn" onclick="openEditTask('${t.id}')">✎</button><button class="action-btn danger" onclick="deleteTask('${t.id}')">✕</button></div>`).join('');
+        return `<div class="client-card">
+          <div class="client-hdr" onclick="toggleClient(this)">
+            <span class="chev">&#9654;</span>
+            <span class="client-name">${escHtml(c.name)}<span class="client-company">${escHtml(c.company||'')}</span></span>
+            <div style="display:flex;gap:4px;align-items:center;margin-right:8px">${bdg}</div>
+            <div style="display:flex;gap:4px" onclick="event.stopPropagation()">
+              <button class="action-btn" onclick="openEditClient('${c.id}')">✎</button>
+              <button class="action-btn" onclick="openMoveClient('${c.id}')">mover</button>
+              <button class="action-btn danger" onclick="deleteClient('${c.id}')">✕</button>
+            </div>
+          </div>
+          <div class="tasks">${thtml}</div>
+        </div>`;
+      }).join('');
+      return `<div class="cat-section">
+        <div class="cat-hdr" onclick="toggleSection(this)">
+          <span class="cat-label" style="color:${CAT_META[cat].color}">${CAT_META[cat].label}</span>
+          <span class="cat-badge" style="background:${CAT_META[cat].bg};color:${CAT_META[cat].color}">${clients.length} entrada${clients.length!==1?'s':''}</span>
+          ${clients.length?`<button class="action-btn" style="margin-left:8px" onclick="event.stopPropagation();expandAll('${cat}',this)">expandir</button>`:''}
+        </div>
+        <div class="cat-body" style="display:block">${rows}</div>
+      </div>`;
+    }).join('');
+
+  }else{
+    // ── VISTA POR CLIENTE ──
+    const q=state.searchQuery.toLowerCase();
+    const map={};
+    state.clients.forEach(c=>{
+      const key=(c.company||c.name).trim();
+      if(!map[key]) map[key]=[];
+      map[key].push(c);
+    });
+    let companies=Object.keys(map).sort((a,b)=>a.localeCompare(b,'es'));
+    if(q) companies=companies.filter(co=>
+      co.toLowerCase().includes(q)||map[co].some(c=>c.name.toLowerCase().includes(q))
+    );
+
+    if(!companies.length){
+      body=`<div class="no-results">Sin resultados para "${escHtml(state.searchQuery)}".</div>`;
+    }else{
+      body=companies.map(co=>{
+        const projs=q?map[co].filter(c=>co.toLowerCase().includes(q)||c.name.toLowerCase().includes(q)):map[co];
+        const uniqCats=[...new Set(projs.map(p=>p.cat))];
+        const pills=uniqCats.map(cat=>`<span class="cat-pill" style="background:${CAT_META[cat].bg};color:${CAT_META[cat].color}">${CAT_META[cat].label}</span>`).join('');
+        const totalT=projs.reduce((s,c)=>s+state.tasks.filter(t=>t.cid===c.id).length,0);
+
+        const projRows=projs.map(c=>{
+          const ct=state.tasks.filter(t=>t.cid===c.id);
+          const cr=ct.filter(t=>t.prio==='0 Crítico').length;
+          const hi=ct.filter(t=>t.prio==='1 Alta').length;
+          const bdg=[cr?`<span class="tag" style="background:#FFCDD2;color:#C62828">${cr} crít.</span>`:'',
+                     hi?`<span class="tag" style="background:#FFE0B2;color:#E65100">${hi} alta</span>`:''].filter(Boolean).join('');
+          const thtml=ct.length===0?`<div class="empty">Sin tareas.</div>`:ct.map(t=>`
+            <div class="task">${pDot(t.prio)}<div style="flex:1">
+              <div class="task-text">${escHtml(t.text)}</div>
+              ${t.note?`<div class="task-note">${escHtml(t.note)}</div>`:''}
+            </div><button class="action-btn" onclick="openEditTask('${t.id}')">✎</button><button class="action-btn danger" onclick="deleteTask('${t.id}')">✕</button></div>`).join('');
+          return `<div>
+            <div class="proj-row" onclick="toggleProjTasks(this)">
+              <span class="chev">&#9654;</span>
+              <span class="cat-pill" style="background:${CAT_META[c.cat].bg};color:${CAT_META[c.cat].color}">${CAT_META[c.cat].label}</span>
+              <span class="proj-name">${escHtml(c.name)}</span>
+              <div style="display:flex;gap:4px">${bdg}</div>
+              <span style="font-size:10px;color:#aaa">${ct.length} tarea${ct.length!==1?'s':''}</span>
+              <div style="display:flex;gap:4px;margin-left:4px" onclick="event.stopPropagation()">
+                <button class="action-btn" onclick="openEditClient('${c.id}')">✎</button>
+                <button class="action-btn" onclick="openMoveClient('${c.id}')">mover</button>
+                <button class="action-btn danger" onclick="deleteClient('${c.id}')">✕</button>
+              </div>
+            </div>
+            <div class="proj-tasks-wrap">${thtml}</div>
+          </div>`;
+        }).join('');
+
+        return `<div class="company-section">
+          <div class="company-hdr" onclick="toggleCompany(this)">
+            <span class="chev">&#9654;</span>
+            <span class="company-name">${escHtml(co)}</span>
+            <div class="company-pills">${pills}</div>
+            <span style="font-size:10px;color:#aaa;margin-left:8px;white-space:nowrap">${projs.length} proy · ${totalT} tareas</span>
+          </div>
+          <div class="company-body" style="display:none">${projRows}</div>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  app.innerHTML=m1+m2+viewBar+body;
+}
+
+function setView(v){state.activeView=v;render();}
+function setFilter(cat){state.activeFilter=cat;state.activeView='cat';render();}
+function setSearch(q){state.searchQuery=q;render();}
+
+function toggleSection(hdr){
+  const b=hdr.nextElementSibling;b.style.display=b.style.display==='none'?'block':'none';
+}
+function toggleClient(hdr){
+  const ch=hdr.querySelector('.chev'),t=hdr.nextElementSibling,o=t.classList.contains('open');
+  t.classList.toggle('open',!o);ch.classList.toggle('open',!o);
+}
+function toggleCompany(hdr){
+  const ch=hdr.querySelector('.chev'),b=hdr.nextElementSibling,o=b.style.display==='block';
+  b.style.display=o?'none':'block';ch.classList.toggle('open',!o);
+}
+function toggleProjTasks(row){
+  const ch=row.querySelector('.chev'),w=row.nextElementSibling,o=w.classList.contains('open');
+  w.classList.toggle('open',!o);ch.classList.toggle('open',!o);
+}
+function expandAll(cat,btn){
+  const sec=btn.closest('.cat-section');
+  const cards=sec.querySelectorAll('.tasks'),chevs=sec.querySelectorAll('.client-hdr .chev');
+  const any=Array.from(cards).some(c=>c.classList.contains('open'));
+  cards.forEach(c=>c.classList.toggle('open',!any));chevs.forEach(c=>c.classList.toggle('open',!any));
+  btn.textContent=any?'expandir':'colapsar';
+}
+
+// Autocomplete
+function getCompanies(){
+  return [...new Set(state.clients.map(c=>c.company||c.name))].sort((a,b)=>a.localeCompare(b,'es'));
+}
+function setupAC(){
+  const inp=document.getElementById('fCompany'),list=document.getElementById('acList');
+  inp.addEventListener('input',()=>{
+    const q=inp.value.toLowerCase();
+    const m=getCompanies().filter(c=>c.toLowerCase().includes(q));
+    if(!q||!m.length){list.style.display='none';return;}
+    list.innerHTML=m.map(c=>`<div class="ac-item" onmousedown="pickCompany('${escHtml(c)}')">${escHtml(c)}</div>`).join('');
+    list.style.display='block';
+  });
+  inp.addEventListener('blur',()=>setTimeout(()=>list.style.display='none',150));
+}
+function pickCompany(n){
+  document.getElementById('fCompany').value=n;
+  document.getElementById('acList').style.display='none';
+}
+
+// Modals
+function openAddClient(){
+  editingClientId=null;
+  document.getElementById('clientModalTitle').textContent='Agregar proyecto';
+  document.getElementById('fCompany').value='';
+  document.getElementById('fName').value='';
+  document.getElementById('fNotes').value='';
+  document.getElementById('fCat').innerHTML=Object.entries(CAT_META).map(([k,v])=>`<option value="${k}">${v.label}</option>`).join('');
+  document.getElementById('clientModal').classList.add('open');
+}
+function closeClientModal(){document.getElementById('clientModal').classList.remove('open');}
+
+function openEditClient(id){
+  const c=state.clients.find(x=>x.id===id);
+  if(!c) return;
+  editingClientId=id;
+  document.getElementById('clientModalTitle').textContent='Editar proyecto';
+  document.getElementById('fCompany').value=c.company||'';
+  document.getElementById('fName').value=c.name||'';
+  document.getElementById('fNotes').value=c.notes||'';
+  document.getElementById('fCat').innerHTML=Object.entries(CAT_META).map(([k,v])=>`<option value="${k}"${k===c.cat?' selected':''}>${v.label}</option>`).join('');
+  document.getElementById('clientModal').classList.add('open');
+}
+let editingClientId=null;
+function saveClient(){
+  const company=document.getElementById('fCompany').value.trim();
+  const name=document.getElementById('fName').value.trim();
+  if(!company||!name){showToast('Completa Razón Social y Nombre Clave');return;}
+  if(editingClientId){
+    const c=state.clients.find(x=>x.id===editingClientId);
+    if(c){c.company=company;c.name=name;c.cat=document.getElementById('fCat').value;c.notes=document.getElementById('fNotes').value.trim();}
+    showToast('Proyecto actualizado');
+  } else {
+    state.clients.push({id:uid(),company,name,cat:document.getElementById('fCat').value,notes:document.getElementById('fNotes').value.trim()});
+    showToast('Proyecto agregado');
+  }
+  editingClientId=null;
+  saveLocal();render();closeClientModal();
+}
+function deleteClient(id){
+  if(!confirm('¿Eliminar este proyecto y todas sus tareas?')) return;
+  state.clients=state.clients.filter(c=>c.id!==id);
+  state.tasks=state.tasks.filter(t=>t.cid!==id);
+  saveLocal();render();showToast('Proyecto eliminado');
+}
+function openMoveClient(id){
+  movingClientId=id;
+  const cl=state.clients.find(c=>c.id===id);
+  document.getElementById('fMoveCat').innerHTML=Object.entries(CAT_META).map(([k,v])=>`<option value="${k}"${k===cl.cat?' selected':''}>${v.label}</option>`).join('');
+  document.getElementById('moveModal').classList.add('open');
+}
+function closeMoveModal(){document.getElementById('moveModal').classList.remove('open');movingClientId=null;}
+function confirmMove(){
+  if(!movingClientId) return;
+  const cl=state.clients.find(c=>c.id===movingClientId);
+  if(cl) cl.cat=document.getElementById('fMoveCat').value;
+  saveLocal();render();closeMoveModal();showToast('Proyecto movido');
+}
+function openAddTask(){
+  document.getElementById('ftClient').innerHTML=state.clients.map(c=>`<option value="${c.id}">${c.name}${c.company?' — '+c.company:''}</option>`).join('');
+  document.getElementById('ftTask').value='';
+  document.getElementById('ftNote').value='';
+  document.getElementById('ftPrio').value='2 Media';
+  document.getElementById('taskModal').classList.add('open');
+}
+function closeTaskModal(){document.getElementById('taskModal').classList.remove('open');}
+function saveTask(){
+  const text=document.getElementById('ftTask').value.trim();
+  if(!text) return;
+  state.tasks.push({id:uid(),cid:document.getElementById('ftClient').value,text,prio:document.getElementById('ftPrio').value,note:document.getElementById('ftNote').value.trim()});
+  saveLocal();render();closeTaskModal();showToast('Tarea agregada');
+}
+function deleteTask(id){
+  state.tasks=state.tasks.filter(t=>t.id!==id);
+  saveLocal();render();showToast('Tarea eliminada');
+}
+let editingTaskId=null;
+function openEditTask(id){
+  const t=state.tasks.find(x=>x.id===id);
+  if(!t) return;
+  editingTaskId=id;
+  document.getElementById('etTask').value=t.text||'';
+  document.getElementById('etPrio').value=t.prio||'';
+  document.getElementById('etNote').value=t.note||'';
+  document.getElementById('editTaskModal').classList.add('open');
+}
+function closeEditTaskModal(){
+  document.getElementById('editTaskModal').classList.remove('open');
+  editingTaskId=null;
+}
+function saveEditTask(){
+  const text=document.getElementById('etTask').value.trim();
+  if(!text) return;
+  const t=state.tasks.find(x=>x.id===editingTaskId);
+  if(t){t.text=text;t.prio=document.getElementById('etPrio').value;t.note=document.getElementById('etNote').value.trim();}
+  saveLocal();render();closeEditTaskModal();showToast('Tarea actualizada');
+}
+
+document.querySelectorAll('.modal-overlay').forEach(m=>{
+  m.addEventListener('click',e=>{if(e.target===m)m.classList.remove('open');});
+});
+
+setupAC();
+init();
+</script>
+</body>
+</html>
